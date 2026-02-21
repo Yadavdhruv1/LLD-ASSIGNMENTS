@@ -1,50 +1,42 @@
 import java.util.*;
 
 public class OnboardingService {
+
     private final StudentRepository db;
     private final StudentParser parser;
     private final StudentValidator validator;
     private final RegistrationPrint printer;
 
     public OnboardingService(StudentRepository db) {
-    this.db = db;
-    this.parser = new StudentParser();
-    this.validator = new StudentValidator();
-    this.printer = new RegistrationPrint();
-}
-
-    // Intentionally violates SRP: parses + validates + creates ID + saves + prints.
-    public void registerFromRawInput(String raw) {
-
-    // 1. Print input
-    printer.printInput(raw);
-
-    // 2. Parse input
-    Map<String,String> kv = parser.parse(raw);
-
-    String name = kv.getOrDefault("name", "");
-    String email = kv.getOrDefault("email", "");
-    String phone = kv.getOrDefault("phone", "");
-    String program = kv.getOrDefault("program", "");
-
-    // 3. Validate
-    List<String> errors = validator.validate(name, email, phone, program);
-
-    if (!errors.isEmpty()) {
-        printer.printErrors(errors);
-        return;
+        this.db = db;
+        this.parser = new StudentParser();
+        this.validator = new StudentValidator();
+        this.printer = new RegistrationPrint();
     }
 
-    // 4. Generate ID
-    String id = IdUtil.nextStudentId(db.count());
+    public void registerFromRawInput(String raw) {
 
-    // 5. Create record
-    StudentRecord rec = new StudentRecord(id, name, email, phone, program);
+        printer.printInput(raw);
 
-    // 6. Save
-    db.save(rec);
+        Map<String,String> kv = parser.parse(raw);
 
-    // 7. Print success
-    printer.printSuccess(id, db.count(), rec);
-}
+        String name = kv.getOrDefault("name", "");
+        String email = kv.getOrDefault("email", "");
+        String phone = kv.getOrDefault("phone", "");
+        String program = kv.getOrDefault("program", "");
+
+        List<String> errors = validator.validate(name, email, phone, program);
+
+        if (!errors.isEmpty()) {
+            printer.printErrors(errors);
+            return;
+        }
+
+        String id = IdUtil.nextStudentId(db.count());
+        StudentRecord rec = new StudentRecord(id, name, email, phone, program);
+
+        db.save(rec);
+
+        printer.printSuccess(id, db.count(), rec);
+    }
 }
