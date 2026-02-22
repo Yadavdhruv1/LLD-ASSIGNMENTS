@@ -33,5 +33,4 @@ public class HostelFeeCalculator {
         String bookingId = "H-" + (7000 + r.nextInt(1000));
         repo.save(bookingId, req, monthly, deposit);
     }
-    
 }
